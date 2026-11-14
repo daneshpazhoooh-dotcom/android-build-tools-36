@@ -1,0 +1,31 @@
+
+name: Download Android Build Tools 36.0.0
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download official Windows package
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 \
+            -o build-tools_r36_windows.zip \
+            https://dl.google.com/android/repository/build-tools_r36_windows.zip
+          actual_size="$(stat -c%s build-tools_r36_windows.zip)"
+          test "$actual_size" = "58699878"
+          echo "f16ccffd34de8790dede813a6c7d8e2c11a27b50  build-tools_r36_windows.zip" | sha1sum -c -
+
+      - name: Upload verified archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-tools-36.0.0-windows
+          path: build-tools_r36_windows.zip
+          if-no-files-found: error
+          retention-days: 7
